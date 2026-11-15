@@ -1,0 +1,15 @@
+doctype html
+html(lang="hr")
+  head
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1")
+    title #{title} | Web2 Lab 2
+    link(rel="stylesheet" href="/style.css")
+  body
+    header
+      nav(aria-label="Demonstracije")
+        a(href="/sql" aria-current=page === "sql" ? "page" : undefined) SQL umetanje
+        a(href="/auth" aria-current=page === "auth" ? "page" : undefined) Loša autentifikacija
+    main
+      h1= title
+      block content

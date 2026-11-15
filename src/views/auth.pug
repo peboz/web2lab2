@@ -1,0 +1,45 @@
+extends layout
+
+block content
+  section(aria-labelledby="auth-form-title")
+    h2#auth-form-title Prijava PIN-om
+    p U zaštićenom načinu #{failureLimit} pogrešna pokušaja unutar 60 sekundi zaključavaju račun na #{lockSeconds} sekundi.
+    form(method="post" action="/auth")
+      div
+        label
+          input(type="checkbox" name="vulnerable" checked=vulnerable)
+          |  Uključi ranjivost
+      div.field
+        label(for="demo-pin") PIN računa demo
+        input#demo-pin(type="password" name="pin" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required autocomplete="off")
+      div
+        button(type="submit" name="action" value="verify") Provjeri PIN
+        button(type="submit" name="action" value="attack" formnovalidate) Pokreni pogađanje PIN-a
+  if error || attempts
+    section(aria-labelledby="auth-result-title")
+      h2#auth-result-title= bruteForce ? "Rezultat pogađanja" : "Rezultat prijave"
+      if error
+        p= error
+      if attempts
+        - const last = attempts.at(-1)
+        p= vulnerable ? "Ranjivi način - Bez ograničenja pokušaja" : "Zaštićeni način - Privremeno zaključavanje"
+        if last.outcome === "granted"
+          p.notice= bruteForce ? `PIN ${last.pin} pogođen je u ${attempts.length}. pokušaju.` : "Prijava na probni račun je uspjela."
+        else if last.retryAfter
+          p.notice Račun je zaključan. Pokušajte ponovno za #{last.retryAfter} s.
+        else
+          p.notice Pogrešan PIN.
+        if bruteForce
+          div.table-wrap
+            table
+              thead
+                tr
+                  th(scope="col") Pokušaj
+                  th(scope="col") PIN
+                  th(scope="col") Ishod
+              tbody
+                each attempt, index in attempts
+                  tr
+                    td= index + 1
+                    td: code= attempt.pin
+                    td= { granted: "Prijava uspjela", denied: "Pogrešan PIN", locked: "Račun zaključan" }[attempt.outcome]

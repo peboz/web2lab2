@@ -1,0 +1,46 @@
+extends layout
+
+block content
+  section(aria-labelledby="sql-form-title")
+    h2#sql-form-title Dohvat bilješke
+    p Za ispravan dohvat unesite naslov #[code Podsjetnik] i PIN #[code 2468]. Primjer napada koristi naslov #[code= attackTitle] i PIN #[code 0000].
+    form(method="post" action="/sql")
+      div
+        label
+          input(type="checkbox" name="vulnerable" checked=vulnerable)
+          |  Uključi ranjivost
+      div.field
+        label(for="noteTitle") Naslov
+        input#noteTitle(type="text" name="noteTitle" maxlength="120" value=noteTitle required autocomplete="off" spellcheck="false")
+      div.field
+        label(for="sql-pin") PIN
+        input#sql-pin(type="text" name="pin" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" value=pin required autocomplete="off")
+      div
+        button(type="submit" name="action" value="lookup") Dohvati bilješku
+        button(type="submit" name="action" value="attack" formnovalidate) Isprobaj tautologiju
+  if error || result
+    section(aria-labelledby="sql-result-title")
+      h2#sql-result-title Rezultat
+      if error
+        p= error
+      if result
+        p= vulnerable ? "Ranjivi način - Spajanje teksta" : "Zaštićeni način - Parametrizirani upit"
+        pre.query: code= result.query
+        if result.notes
+          if result.notes.length
+            p= `Broj pronađenih bilješki: ${result.notes.length}`
+            div.table-wrap
+              table
+                thead
+                  tr
+                    th(scope="col") Naslov
+                    th(scope="col") Vlasnik
+                    th(scope="col") Bilješka
+                tbody
+                  each note in result.notes
+                    tr
+                      td= note.title
+                      td= note.owner
+                      td= note.message
+          else
+            p Nema bilješki za taj naslov i PIN.
